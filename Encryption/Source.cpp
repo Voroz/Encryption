@@ -4,22 +4,16 @@
 
 using namespace std;
 
-class EncryptionData {
+class FactorData {
 public:
-	EncryptionData() :
-		n(0),
-		r(0),
-		d(0),
-		message(0) {};
-	EncryptionData(long long int n, long long int r, long long int d, long long int message) :
-		n(n),
-		r(r),
-		d(d),
-		message(message){};
-	long long int n;
-	long long int r;
-	long long int d;
-	long long int message;
+	FactorData() :
+		p(0),
+		q(0) {};
+	FactorData(long long int p, long long int q) :
+		p(p),
+		q(q) {};
+	long long int p;
+	long long int q;
 };
 
 int gcd(int a, int b) {
@@ -80,24 +74,27 @@ int findKey(int p, int q, int e) {
 	return d;
 }
 
-EncryptionData encrypt(int message, int p, int q, int e) {
-	long long int n = p*q;
-	long long int r = (p - 1)*(q - 1);
-
-	if (gcd(e, r) != 1) {
-		cout << "Error: gcd(e, r) != 1 IN encrypt()" << endl;
-		return EncryptionData();
-	}
-
-	int d = findKey(p, q, e);
-
+int encrypt(int message, long long int n, int e) {
 	long long int encryptedMessage = moduloPow(message, e, n);
-	return EncryptionData(n, r, d, encryptedMessage);
+	return encryptedMessage;
 }
 
 int decrypt(long long int message, long long int d, long long int n) {
 	int decryptedMessage = moduloPow(message, d, n);
 	return decryptedMessage;
+}
+
+FactorData factor(long long int toFactor) {
+	FactorData data;
+	int highest = sqrt(toFactor);
+	for (int i = 2; i <= highest; i++){
+		if (toFactor % i == 0){
+			data.p = i;
+			data.q = toFactor / i;
+			break;
+		}
+	}
+	return data;
 }
 
 
@@ -120,14 +117,14 @@ int main() {
 		cout << endl;
 
 		// Encrypt string and save encrypted integers to vector eData
-		vector<EncryptionData> eData;
+		vector<int> eData;
 		for (int i = 0; i < strMessage.length(); i++) {
-			eData.push_back(encrypt(strMessage[i], p, q, e));
+			eData.push_back(encrypt(strMessage[i], p*q, e));
 		}
 
 		cout << "Encrypted message: " << endl;
 		for (int i = 0; i < eData.size(); i++) {
-			cout << eData[i].message << endl;
+			cout << eData[i] << endl;
 		}
 		cout << endl;
 
@@ -135,7 +132,7 @@ int main() {
 		cout << "Decrypted message:" << endl;
 		string decryptedMessage = "";
 		for (int i = 0; i < eData.size(); i++) {
-			decryptedMessage += decrypt(eData[i].message, eData[i].d, eData[i].n);
+			decryptedMessage += decrypt(eData[i], d, p*q);
 		}
 		cout << decryptedMessage << "\n\n\n\n";
 	}
