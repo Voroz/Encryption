@@ -140,6 +140,5 @@ int main() {
 		cout << decryptedMessage << "\n\n\n\n";
 	}
 
-
 	return 0;
 }
